@@ -98,6 +98,17 @@
             font-size: 0.9em;
             color: #333;
         }
+        .contact-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px dashed #ccc;
+        }
+        .contact-link a {
+            color: #25D366; /* Warna ikon WhatsApp */
+            text-decoration: none;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -106,17 +117,17 @@
     <h1>PENGINGAT MINUM/TETES OBAT</h1>
 
     <div class="input-group">
-        <label for="doses">SEHARI BERAPA KALI</label>
+        <label for="doses">SEHARI BERAPA KALI :</label>
         <input type="number" id="doses" value="4" min="2">
     </div>
 
     <div class="input-group">
-        <label for="start_time">DIMULAI JAM</label>
+        <label for="start_time">DIMULAI JAM BERAPA :</label>
         <input type="time" id="start_time" value="05:00">
     </div>
 
     <div class="input-group">
-        <label for="end_time">DIAKHIRI JAM</label>
+        <label for="end_time">DIAKHIRI JAM BERAPA :</label>
         <input type="time" id="end_time" value="20:00">
     </div>
 
@@ -130,7 +141,14 @@
     </button>
 
     <div id="status-msg"></div>
-</div>
+
+    <div class="contact-link">
+        Ada masalah atau saran? Hubungi kami:<br>
+        <a href="https://wa.me/6281323457472" target="_blank">
+            Hubungi via WhatsApp (+62 813-2345-7472)
+        </a>
+    </div>
+    </div>
 
 <script>
     // Global variable to store active timeouts/alarms
@@ -194,7 +212,7 @@
                 statusMsg.textContent = "✅ Izin Notifikasi Diberikan! Alarm siap dijadwalkan.";
                 new Notification("Pengingat Obat Aktif", {
                     body: "Aplikasi sekarang dapat menampilkan notifikasi.",
-                    icon: 'ikon_default.png' // Ganti jika Anda punya ikon
+                    icon: 'ikon_default.png' 
                 });
             } else if (permission === "denied") {
                 statusMsg.textContent = "⚠️ Izin Notifikasi Ditolak. Alarm tidak akan berfungsi.";
@@ -213,7 +231,7 @@
             // Memicu notifikasi
             new Notification("⏰ Waktunya Minum Obat!", {
                 body: `Dosis berikutnya adalah pukul ${timeStr}.`,
-                icon: 'ikon_default.png', // Ganti jika Anda punya ikon
+                icon: 'ikon_default.png', 
                 vibrate: [200, 100, 200, 100, 200]
             });
 
@@ -269,7 +287,6 @@
         
         for (let i = 1; i < N; i++) {
             currentMinutes += delta_t;
-            // Gunakan T_end_str untuk dosis terakhir untuk menjamin akurasi jika ada pembulatan
             const nextTime = (i === intervals) ? T_end_str : minutesToTime(currentMinutes);
             scheduleList.push(nextTime);
         }
@@ -295,18 +312,3 @@
             }
 
             // Jadwalkan notifikasi
-            scheduleNotification(timeStr, delayMs);
-        });
-
-        resultDiv.innerHTML = outputHTML;
-        
-        if (Notification.permission === "granted") {
-            statusMsg.textContent = `✅ ${scheduleList.length} Alarm telah dijadwalkan untuk hari ini/besok.`;
-        } else {
-            statusMsg.textContent = `⚠️ Hitungan berhasil. Klik "Izinkan Notifikasi Alarm" untuk mengaktifkan alarm.`;
-        }
-    }
-</script>
-
-</body>
-</html>
