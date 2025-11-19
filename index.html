@@ -145,10 +145,10 @@
     <div class="contact-link">
         Ada masalah atau saran? Hubungi kami:<br>
         <a href="https://wa.me/6281323457472" target="_blank">
-            via link WhatsApp ini
+            Hubungi via WhatsApp (+62 813-2345-7472)
         </a>
     </div>
-    </div>
+</div>
 
 <script>
     // Global variable to store active timeouts/alarms
@@ -258,7 +258,7 @@
         const T_end_min = timeToMinutes(T_end_str);
 
         const resultDiv = document.getElementById('result_times');
-        resultDiv.innerHTML = '';
+        resultDiv.innerHTML = ''; // Membersihkan tampilan hasil sebelumnya
 
         // Validasi
         if (N < 2 || T_end_min <= T_start_min || T_start_str === "" || T_end_str === "") {
@@ -267,48 +267,4 @@
             return;
         }
 
-        // 1. Simpan Pengaturan ke Local Storage
-        saveSettings(N, T_start_str, T_end_str);
-
-        // 2. Logika Perhitungan Interval
-        const totalDuration = T_end_min - T_start_min;
-        const intervals = N - 1; 
-        const delta_t = Math.round(totalDuration / intervals); // Jeda dalam menit
-
-        let currentMinutes = T_start_min;
-        let outputHTML = '';
-        const now = new Date();
-        const currentMs = now.getTime();
-        
-        const scheduleList = [];
-
-        // Hitung semua waktu (Dosis 1 hingga Dosis N)
-        scheduleList.push(T_start_str);
-        
-        for (let i = 1; i < N; i++) {
-            currentMinutes += delta_t;
-            const nextTime = (i === intervals) ? T_end_str : minutesToTime(currentMinutes);
-            scheduleList.push(nextTime);
-        }
-        
-        // 3. Tampilkan dan Jadwalkan Alarm
-        scheduleList.forEach((timeStr, index) => {
-            if (index > 0) { // Hanya tampilkan waktu berikutnya (bukan T_start)
-                outputHTML += `<p>WAKTU BERIKUTNYA : <span class="next-time">${timeStr}</span></p>`;
-            }
-
-            // --- Penjadwalan ---
-            const [hour, minute] = timeStr.split(':').map(Number);
-            
-            // Buat objek Date untuk waktu alarm hari ini
-            let alarmDate = new Date();
-            alarmDate.setHours(hour, minute, 0, 0);
-
-            let delayMs = alarmDate.getTime() - currentMs;
-            
-            // Jika alarm sudah lewat hari ini, jadwalkan untuk hari berikutnya
-            if (delayMs < 0) {
-                delayMs += 24 * 60 * 60 * 1000;
-            }
-
-            // Jadwalkan notifikasi
+        //
