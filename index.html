@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f7e0c4; /* Warna latar belakang seperti gambar */
+            background-color: #f7e0c4;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -52,6 +52,7 @@
         .result {
             margin-top: 25px;
             padding-top: 15px;
+            border-top: 1px dashed #ccc;
         }
         .result p {
             margin: 15px 0;
@@ -105,7 +106,7 @@
             border-top: 1px dashed #ccc;
         }
         .contact-link a {
-            color: #25D366; /* Warna ikon WhatsApp */
+            color: #25D366;
             text-decoration: none;
             font-weight: bold;
         }
@@ -186,7 +187,6 @@
         const savedStart = localStorage.getItem('start_time');
         const savedEnd = localStorage.getItem('end_time');
 
-        // Mengisi kembali input dari Local Storage jika ada
         if (savedDoses) document.getElementById('doses').value = savedDoses;
         if (savedStart) document.getElementById('start_time').value = savedStart;
         if (savedEnd) document.getElementById('end_time').value = savedEnd;
@@ -224,18 +224,17 @@
 
     function scheduleNotification(timeStr, delayMs) {
         if (Notification.permission !== "granted") {
-            return; // Jangan jadwalkan jika izin tidak ada
+            return;
         }
         
         const timeoutId = setTimeout(() => {
-            // Memicu notifikasi
             new Notification("⏰ Waktunya Minum Obat!", {
                 body: `Dosis berikutnya adalah pukul ${timeStr}.`,
                 icon: 'ikon_default.png', 
                 vibrate: [200, 100, 200, 100, 200]
             });
 
-            // Setelah dipicu, alarm harus dijadwalkan ulang untuk hari berikutnya (24 jam kemudian)
+            // Jadwalkan ulang untuk hari berikutnya
             scheduleNotification(timeStr, 24 * 60 * 60 * 1000); 
 
         }, delayMs);
@@ -247,7 +246,7 @@
     // --- FUNGSI UTAMA KALKULASI & PENJADWALAN ---
 
     function calculateTimes() {
-        clearActiveAlarms(); // Hapus semua alarm lama sebelum menghitung yang baru
+        clearActiveAlarms();
 
         const N = parseInt(document.getElementById('doses').value);
         const T_start_str = document.getElementById('start_time').value;
@@ -258,13 +257,69 @@
         const T_end_min = timeToMinutes(T_end_str);
 
         const resultDiv = document.getElementById('result_times');
-        resultDiv.innerHTML = ''; // Membersihkan tampilan hasil sebelumnya
+        resultDiv.innerHTML = ''; 
 
         // Validasi
-        if (N < 2 || T_end_min <= T_start_min || T_start_str === "" || T_end_str === "") {
-            resultDiv.innerHTML = '<p style="color: red;">Input tidak valid. Jumlah dosis minimal 2, dan Waktu Akhir harus setelah Waktu Mulai.</p>';
+        if (N < 2 || T_end_min <= T_start_min || isNaN(N) || T_start_str === "" || T_end_str === "") {
+            resultDiv.innerHTML = '<p style="color: red;">Input tidak valid. Harap isi semua kolom dengan benar.</p>';
             clearActiveAlarms();
             return;
         }
 
-        //
+        // 1. Simpan Pengaturan
+        saveSettings(N, T_start_str, T_end_str);
+
+        // 2. Logika Perhitungan
+        const totalDuration = T_end_min - T_start_min;
+        const intervals = N - 1; 
+        const delta_t = Math.round(totalDuration / intervals);
+
+        let currentMinutes = T_start_min;
+        let outputHTML = '';
+        const now = new Date();
+        const currentMs = now.getTime();
+        
+        const scheduleList = [];
+        scheduleList.push(T_start_str);
+        
+        for (let i = 1; i < N; i++) {
+            currentMinutes += delta_t;
+            const nextTime = (i === intervals) ? T_end_str : minutesToTime(currentMinutes);
+            scheduleList.push(nextTime);
+        }
+        
+        // 3. Tampilkan dan Jadwalkan Alarm
+        scheduleList.forEach((timeStr, index) => {
+            // HANYA tampilkan waktu berikutnya (Dosis ke-2 dan seterusnya)
+            if (index > 0) { 
+                outputHTML += `<p>WAKTU BERIKUTNYA : <span class="next-time">${timeStr}</span></p>`;
+            }
+
+            // Penjadwalan Alarm
+            const [hour, minute] = timeStr.split(':').map(Number);
+            let alarmDate = new Date();
+            alarmDate.setHours(hour, minute, 0, 0);
+
+            let delayMs = alarmDate.getTime() - currentMs;
+            
+            if (delayMs < 0) {
+                delayMs += 24 * 60 * 60 * 1000;
+            }
+
+            scheduleNotification(timeStr, delayMs);
+        });
+
+        // Tampilkan hasil hitungan waktu ke elemen DIV
+        resultDiv.innerHTML = outputHTML;
+        
+        // Update pesan status
+        if (Notification.permission === "granted") {
+            statusMsg.textContent = `✅ ${scheduleList.length} Alarm telah dijadwalkan.`;
+        } else {
+            statusMsg.textContent = `⚠️ Hitungan berhasil. Klik "Izinkan Notifikasi Alarm" untuk mengaktifkan alarm.`;
+        }
+    }
+</script>
+
+</body>
+</html>
